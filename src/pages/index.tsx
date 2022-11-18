@@ -1,6 +1,7 @@
 import { GetStaticProps } from "next";
 import Stripe from "stripe";
 import Image from "next/image";
+import Link from "next/link";
 import { useKeenSlider } from "keen-slider/react";
 
 import { stripe } from "../lib/stripe";
@@ -30,22 +31,24 @@ export default function Home({ products }: HomeProps) {
   return (
     <HomeContainer ref={sliderRef} className="keen-slider">
       {products.map((product) => (
-        <Product key={product.id} className="keen-slider__slide">
-          <Image
-            placeholder="blur"
-            draggable={false}
-            blurDataURL="https://www.github.com/eliasallex.png"
-            src={product.imageUrl}
-            width={520}
-            height={400}
-            alt={product.description}
-          />
+        <Link href={`/product/${product.id}`} key={product.id} passHref>
+          <Product className="keen-slider__slide">
+            <Image
+              placeholder="blur"
+              draggable={false}
+              blurDataURL="https://www.github.com/eliasallex.png"
+              src={product.imageUrl}
+              width={520}
+              height={400}
+              alt={product.description}
+            />
 
-          <footer>
-            <strong>{product.name}</strong>
-            <span>{product.price}</span>
-          </footer>
-        </Product>
+            <footer>
+              <strong>{product.name}</strong>
+              <span>{product.price}</span>
+            </footer>
+          </Product>
+        </Link>
       ))}
     </HomeContainer>
   );
@@ -64,7 +67,10 @@ export const getStaticProps: GetStaticProps = async () => {
       name: product.name,
       description: product.description,
       imageUrl: product.images[0],
-      price: price?.unit_amount! / 100,
+      price: new Intl.NumberFormat("pt-br", {
+        style: "currency",
+        currency: "BRL",
+      }).format(price?.unit_amount! / 100),
     };
   });
 
@@ -72,6 +78,6 @@ export const getStaticProps: GetStaticProps = async () => {
     props: {
       products,
     },
-    revalidate: 60 * 60 * 3, // 2 hours
+    revalidate: 60 * 60 * 2, // 2 hours
   };
 };
