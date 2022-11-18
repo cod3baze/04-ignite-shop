@@ -1,22 +1,77 @@
-import { styled } from "../styles";
+import { GetStaticProps } from "next";
+import Stripe from "stripe";
+import Image from "next/image";
+import { useKeenSlider } from "keen-slider/react";
 
-const Button = styled("button", {
-  backgroundColor: "$green300",
-  borderRadius: 4,
-  border: 0,
-  padding: "4px 8px",
-  transition: "all 0.2s",
-  cursor: "pointer",
+import { stripe } from "../lib/stripe";
 
-  "&:hover": {
-    filter: "brightness(0.8)",
-  },
-});
+import { HomeContainer, Product } from "../styles/pages/home";
 
-export default function Home() {
+import "keen-slider/keen-slider.min.css";
+
+interface HomeProps {
+  products: {
+    id: string;
+    name: string;
+    description: string;
+    imageUrl: string;
+    price: number;
+  }[];
+}
+
+export default function Home({ products }: HomeProps) {
+  const [sliderRef] = useKeenSlider({
+    slides: {
+      perView: 3,
+      spacing: 48,
+    },
+  });
+
   return (
-    <div>
-      <Button>Elias Alexandre</Button>
-    </div>
+    <HomeContainer ref={sliderRef} className="keen-slider">
+      {products.map((product) => (
+        <Product key={product.id} className="keen-slider__slide">
+          <Image
+            placeholder="blur"
+            draggable={false}
+            blurDataURL="https://www.github.com/eliasallex.png"
+            src={product.imageUrl}
+            width={520}
+            height={400}
+            alt={product.description}
+          />
+
+          <footer>
+            <strong>{product.name}</strong>
+            <span>{product.price}</span>
+          </footer>
+        </Product>
+      ))}
+    </HomeContainer>
   );
 }
+
+export const getStaticProps: GetStaticProps = async () => {
+  const response = await stripe.products.list({
+    expand: ["data.default_price"],
+  });
+
+  const products = response.data.map((product) => {
+    const price = product.default_price as Stripe.Price;
+
+    return {
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      imageUrl: product.images[0],
+      price: price?.unit_amount! / 100,
+    };
+  });
+
+  return {
+    props: {
+      products,
+    },
+    revalidate: 60 * 60 * 3, // 2 hours
+  };
+};
