@@ -1,5 +1,6 @@
 import { GetStaticProps } from "next";
 import Stripe from "stripe";
+import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { useKeenSlider } from "keen-slider/react";
@@ -28,33 +29,39 @@ export default function Home({ products }: HomeProps) {
   });
 
   return (
-    <HomeContainer ref={sliderRef} className="keen-slider">
-      {products.map((product) => (
-        <Link
-          href={`/product/${product.id}`}
-          key={product.id}
-          passHref
-          prefetch={false}
-        >
-          <Product className="keen-slider__slide">
-            <Image
-              placeholder="blur"
-              draggable={false}
-              blurDataURL="https://www.github.com/eliasallex.png"
-              src={product.imageUrl}
-              width={520}
-              height={400}
-              alt={product.imageUrl}
-            />
+    <>
+      <Head>
+        <title>Home | Ignite Shop 04</title>
+      </Head>
 
-            <footer>
-              <strong>{product.name}</strong>
-              <span>{product.price}</span>
-            </footer>
-          </Product>
-        </Link>
-      ))}
-    </HomeContainer>
+      <HomeContainer ref={sliderRef} className="keen-slider">
+        {products.map((product) => (
+          <Link
+            href={`/product/${product.id}`}
+            key={product.id}
+            passHref
+            prefetch={false}
+          >
+            <Product className="keen-slider__slide">
+              <Image
+                placeholder="blur"
+                draggable={false}
+                blurDataURL="https://www.github.com/eliasallex.png"
+                src={product.imageUrl}
+                width={520}
+                height={400}
+                alt={product.imageUrl}
+              />
+
+              <footer>
+                <strong>{product.name}</strong>
+                <span>{product.price}</span>
+              </footer>
+            </Product>
+          </Link>
+        ))}
+      </HomeContainer>
+    </>
   );
 }
 
